@@ -30,6 +30,12 @@ public sealed class AppSettings
     /// <summary>Opacity of this app's own window, 5-100 percent.</summary>
     public int SelfOpacityPercent { get; set; } = 100;
 
+    /// <summary>
+    /// Keeps the tuner above other windows. On by default: the window you just picked
+    /// would otherwise cover the slider you are trying to drag.
+    /// </summary>
+    public bool AlwaysOnTop { get; set; } = true;
+
     /// <summary>When true, every window we dimmed is put back before the app exits.</summary>
     public bool RestoreAllOnExit { get; set; }
 

@@ -32,6 +32,8 @@ public sealed class SettingsForm : Form
 
     private CardPanel _cardBehavior;
     private FlatLabel _lblBehavior;
+    private CheckBox _chkAlwaysOnTop;
+    private FlatLabel _lblAlwaysOnTopHint;
     private CheckBox _chkRestoreOnExit;
     private FlatLabel _lblRestoreHint;
     private FlatLabel _lblMinOpacity;
@@ -252,6 +254,31 @@ public sealed class SettingsForm : Form
 
         _lblBehavior = LayoutHelper.NewLabel(ContentAlignment.MiddleLeft);
 
+        _chkAlwaysOnTop = new CheckBox
+        {
+            Dock = DockStyle.Fill,
+            Height = 30,
+            FlatStyle = FlatStyle.Flat,
+            AutoSize = false,
+            Checked = _settings.AlwaysOnTop,
+            Margin = new Padding(0, 6, 0, 0),
+        };
+        _chkAlwaysOnTop.CheckedChanged += (_, _) =>
+        {
+            _settings.AlwaysOnTop = _chkAlwaysOnTop.Checked;
+            _settings.Save();
+
+            // The owner is the tuner itself, so it follows us out of the topmost
+            // band; applying it here means the change is visible without closing.
+            if (Owner is not null)
+            {
+                Owner.TopMost = _settings.AlwaysOnTop;
+            }
+        };
+
+        _lblAlwaysOnTopHint = LayoutHelper.NewLabel(ContentAlignment.MiddleLeft);
+        _lblAlwaysOnTopHint.Margin = new Padding(0, 0, 0, 8);
+
         _chkRestoreOnExit = new CheckBox
         {
             Dock = DockStyle.Fill,
@@ -291,6 +318,8 @@ public sealed class SettingsForm : Form
         _lblMinHint = LayoutHelper.NewLabel(ContentAlignment.MiddleLeft);
 
         LayoutHelper.AddRow(inner, _lblBehavior, 26);
+        LayoutHelper.AddRow(inner, _chkAlwaysOnTop, 30);
+        LayoutHelper.AddRow(inner, _lblAlwaysOnTopHint, 32);
         LayoutHelper.AddRow(inner, _chkRestoreOnExit, 30);
         LayoutHelper.AddRow(inner, _lblRestoreHint, 32);
         LayoutHelper.AddRow(inner, _lblMinOpacity, 26);
@@ -583,12 +612,15 @@ public sealed class SettingsForm : Form
         foreach (Label label in new Label[]
                  {
                      _lblAppearance, _lblTheme, _lblLanguage, _lblBehavior,
-                     _lblRestoreHint, _lblMinOpacity, _lblMinHint, _lblManaged, _lblManagedHint,
+                     _lblAlwaysOnTopHint, _lblRestoreHint, _lblMinOpacity, _lblMinHint,
+                     _lblManaged, _lblManagedHint,
                  })
         {
             label.TextAlign = leading;
         }
 
+        _chkAlwaysOnTop.CheckAlign = leading;
+        _chkAlwaysOnTop.TextAlign = leading;
         _chkRestoreOnExit.CheckAlign = leading;
         _chkRestoreOnExit.TextAlign = leading;
 
@@ -600,9 +632,11 @@ public sealed class SettingsForm : Form
         _lblTheme.Font = FontProvider.Get(9f);
         _lblLanguage.Font = FontProvider.Get(9f);
         _lblMinOpacity.Font = FontProvider.Get(9f);
+        _lblAlwaysOnTopHint.Font = FontProvider.Get(8f);
         _lblRestoreHint.Font = FontProvider.Get(8f);
         _lblMinHint.Font = FontProvider.Get(8f);
         _lblManagedHint.Font = FontProvider.Get(8f);
+        _chkAlwaysOnTop.Font = FontProvider.Get(9f);
         _chkRestoreOnExit.Font = FontProvider.Get(9f);
         _cmbLanguage.Font = FontProvider.Get(9f);
         _btnLight.Font = FontProvider.Get(9f);
@@ -618,6 +652,8 @@ public sealed class SettingsForm : Form
         _btnDark.Text = Loc.T("Dark");
         _lblLanguage.Text = Loc.T("Language");
         _lblBehavior.Text = Loc.T("Behavior");
+        _chkAlwaysOnTop.Text = Loc.T("AlwaysOnTop");
+        _lblAlwaysOnTopHint.Text = Loc.T("AlwaysOnTopHint");
         _chkRestoreOnExit.Text = Loc.T("RestoreOnExit");
         _lblRestoreHint.Text = Loc.T("RestoreOnExitHint");
         _lblMinOpacity.Text = Loc.T("MinOpacity", _settings.MinimumOpacityPercent);
@@ -671,7 +707,9 @@ public sealed class SettingsForm : Form
         _lblTheme.ForeColor = _palette.TextPrimary;
         _lblLanguage.ForeColor = _palette.TextPrimary;
         _lblMinOpacity.ForeColor = _palette.TextPrimary;
+        _chkAlwaysOnTop.ForeColor = _palette.TextPrimary;
         _chkRestoreOnExit.ForeColor = _palette.TextPrimary;
+        _lblAlwaysOnTopHint.ForeColor = _palette.TextSecondary;
         _lblRestoreHint.ForeColor = _palette.TextSecondary;
         _lblMinHint.ForeColor = _palette.TextSecondary;
         _lblManagedHint.ForeColor = _palette.TextSecondary;

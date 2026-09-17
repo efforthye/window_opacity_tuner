@@ -70,6 +70,7 @@ public sealed class MainForm : Form
         ApplyLanguage();
         ApplyPalette();
         ApplySelfOpacity(_settings.SelfOpacityPercent, save: false);
+        ApplyAlwaysOnTop();
         UpdateSelectionUi();
 
         _pickTimer.Tick += OnPickTick;
@@ -548,10 +549,31 @@ public sealed class MainForm : Form
         if (commit && target != IntPtr.Zero)
         {
             SelectWindow(target);
+
+            // The window that was just picked usually sits on top of us, and the
+            // next thing the user wants is the slider, so come back to the front
+            // with the slider already focused for the arrow keys and the wheel.
+            BringTunerForward();
         }
         else
         {
             UpdateStatusForTracked();
+        }
+    }
+
+    private void BringTunerForward()
+    {
+        if (WindowState == FormWindowState.Minimized)
+        {
+            WindowState = FormWindowState.Normal;
+        }
+
+        Activate();
+        NativeMethods.ForceForeground(Handle, _settings.AlwaysOnTop);
+
+        if (_opacitySlider.Enabled)
+        {
+            _opacitySlider.Focus();
         }
     }
 
@@ -800,6 +822,8 @@ public sealed class MainForm : Form
 
     private void UpdateSelfLabel() => _lblSelfPercent.SetText($"{_settings.SelfOpacityPercent}%");
 
+    private void ApplyAlwaysOnTop() => TopMost = _settings.AlwaysOnTop;
+
     // ------------------------------------------------------------------
     // Settings dialog
     // ------------------------------------------------------------------
@@ -814,6 +838,7 @@ public sealed class MainForm : Form
 
         ApplyLanguage();
         ApplyPalette();
+        ApplyAlwaysOnTop();
 
         _opacitySlider.Minimum = MinimumAlpha();
         if (_selected != IntPtr.Zero && NativeMethods.IsWindow(_selected))

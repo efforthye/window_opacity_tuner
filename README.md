@@ -8,7 +8,13 @@ its own window can be made translucent from the control in the top-right corner.
 
 ## How it works
 
-Picking a window highlights it with a green outline that follows the cursor. Opacity is
+Picking a window highlights it with a green outline that follows the cursor. Releasing
+over a window selects it and brings the tuner back to the front with the opacity slider
+focused, so the arrow keys and the wheel work straight away. The tuner also stays above
+other windows by default — *Keep this window in front of other windows* under
+**Behavior** turns that off.
+
+Opacity is
 applied through `SetLayeredWindowAttributes`, which stores the value **on the target
 window itself** — so a window stays translucent after this app exits.
 
@@ -67,8 +73,8 @@ does the same thing.
 
 Stored as JSON at `%APPDATA%\WindowOpacityTuner\settings.json`: language, theme, the
 app's own opacity (down to 5%), window position, the lowest opacity the slider will allow
-(3% by default, so a window can never be dimmed until you cannot find it), and the
-restore-on-exit switch. A settings file written by an older build keeps its own floor —
+(3% by default, so a window can never be dimmed until you cannot find it), the
+always-on-top switch (on by default), and the restore-on-exit switch. A settings file written by an older build keeps its own floor —
 lower it under **Behavior** or delete the file to pick up the new default.
 
 ## Notes

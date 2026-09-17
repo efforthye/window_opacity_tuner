@@ -27,6 +27,9 @@ internal static class NativeMethods
     public static readonly IntPtr HWND_TOPMOST = new(-1);
     public static readonly IntPtr HWND_NOTOPMOST = new(-2);
 
+    // ---- ShowWindow ----------------------------------------------------
+    public const int SW_RESTORE = 9;
+
     public const uint SWP_NOSIZE = 0x0001;
     public const uint SWP_NOMOVE = 0x0002;
     public const uint SWP_NOACTIVATE = 0x0010;
@@ -140,6 +143,12 @@ internal static class NativeMethods
     [DllImport("user32.dll")]
     public static extern IntPtr GetForegroundWindow();
 
+    [DllImport("user32.dll")]
+    public static extern bool SetForegroundWindow(IntPtr hWnd);
+
+    [DllImport("user32.dll")]
+    public static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);
+
     // ---- DWM -----------------------------------------------------------
 
     [DllImport("dwmapi.dll")]
@@ -197,6 +206,40 @@ internal static class NativeMethods
         }
 
         return GetWindowRect(hWnd, out RECT raw) ? raw.ToRectangle() : Rectangle.Empty;
+    }
+
+    /// <summary>
+    /// Pulls one of our own windows back to the front, un-minimizing it first.
+    /// SetForegroundWindow alone is not enough: it is refused outright when the
+    /// foreground belongs to another app, and it does nothing about z-order when we
+    /// already hold the foreground but sit under a window from the topmost band. So
+    /// the raise always happens too, and <paramref name="keepTopmost"/> says which
+    /// band to leave the window in afterwards.
+    /// </summary>
+    public static void ForceForeground(IntPtr hWnd, bool keepTopmost)
+    {
+        if (hWnd == IntPtr.Zero || !IsWindow(hWnd))
+        {
+            return;
+        }
+
+        if (IsIconic(hWnd))
+        {
+            ShowWindow(hWnd, SW_RESTORE);
+        }
+
+        SetForegroundWindow(hWnd);
+
+        const uint flags = SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE;
+        SetWindowPos(hWnd, HWND_TOPMOST, 0, 0, 0, 0, flags);
+
+        if (!keepTopmost)
+        {
+            // A trip through the topmost band raises the window above everything,
+            // including other apps' always-on-top windows; dropping straight back out
+            // of the band keeps it there until something else is activated.
+            SetWindowPos(hWnd, HWND_NOTOPMOST, 0, 0, 0, 0, flags);
+        }
     }
 
     /// <summary>Paints the title bar of our own form dark on Windows 10 1809+.</summary>
