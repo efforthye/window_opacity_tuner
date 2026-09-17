@@ -1,0 +1,38 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <UseWindowsForms>true</UseWindowsForms>
+    <Nullable>disable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <LangVersion>latest</LangVersion>
+
+    <!-- Allows `dotnet build/publish` to run from Linux/WSL while targeting Windows. -->
+    <EnableWindowsTargeting>true</EnableWindowsTargeting>
+
+    <AssemblyName>WindowOpacityTuner</AssemblyName>
+    <RootNamespace>WindowOpacityTuner</RootNamespace>
+    <ApplicationHighDpiMode>PerMonitorV2</ApplicationHighDpiMode>
+
+    <!-- Gives the exe, the taskbar button and any pinned shortcut a real icon. -->
+    <ApplicationIcon>app.ico</ApplicationIcon>
+
+    <Version>1.0.0</Version>
+    <Product>Window Opacity Tuner</Product>
+    <Company>softnyx</Company>
+    <Copyright>Copyright (c) 2026</Copyright>
+
+    <!-- Single-file publish defaults; overridden on the command line when needed. -->
+    <PublishSingleFile>true</PublishSingleFile>
+    <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
+    <SatelliteResourceLanguages>en</SatelliteResourceLanguages>
+    <DebugType>none</DebugType>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Same file again, this time readable at runtime so the forms can use every size. -->
+    <EmbeddedResource Include="app.ico" LogicalName="WindowOpacityTuner.app.ico" />
+  </ItemGroup>
+
+</Project>
