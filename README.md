@@ -2,7 +2,8 @@
 
 Adjust the opacity of any window with a slider. Point at a window, pick it, drag.
 
-A small Windows utility built on WinForms (.NET 8). Light and dark themes, five UI
+A small Windows utility built on WinForms (.NET 8), with a native macOS version in
+[`macos/`](#macos). Light and dark themes, five UI
 languages (English, Korean, Japanese, Chinese, Arabic with right-to-left layout), and
 its own window can be made translucent from the control in the top-right corner.
 
@@ -77,6 +78,43 @@ app's own opacity (down to 5%), window position, the lowest opacity the slider w
 always-on-top switch (on by default), and the restore-on-exit switch. A settings file written by an older build keeps its own floor —
 lower it under **Behavior** or delete the file to pick up the new default.
 
+## macOS
+
+`macos/` is a separate Swift app (macOS 13 or later) with the same window: pick a
+window, drag the slider, the same five languages, light and dark, its own opacity in the
+top-right corner, and an **Adjusted windows** list in Settings.
+
+macOS has no public API for changing another app's window opacity (tools such as yabai
+need System Integrity Protection partly disabled), so the Mac version works differently.
+It captures the screen *without* the picked window, which is what would show if the
+window were not there, and draws that on top of the window at `100% − opacity`. On
+screen that is the same blend a translucent window gives. The overlay ignores the
+mouse, so clicks, typing and scrolling still go to the real window.
+
+What that means in practice:
+
+- It needs **Screen Recording** permission (System Settings → Privacy & Security →
+  Screen Recording). Allow it, then quit and reopen the tuner.
+- Nothing is changed on the window itself, so quitting the tuner always puts every
+  window back. There is no restore-on-exit setting.
+- The overlay follows the window at 60 Hz, so it trails slightly while a window is
+  dragged, and for a moment after you click a window that raises it.
+- Video or animation behind the window shows through with roughly a frame of lag.
+
+Build and run (Xcode Command Line Tools are enough):
+
+```bash
+cd macos
+./build.sh              # dist/Window Opacity Tuner.app for this Mac's architecture
+./build.sh --universal  # Apple silicon + Intel
+./build.sh --install    # also copy it to ~/Applications
+open "dist/Window Opacity Tuner.app"
+```
+
+The app is ad-hoc signed with its designated requirement pinned to the bundle id, so
+the Screen Recording grant survives rebuilds. Settings are
+kept in UserDefaults (`com.efforthye.WindowOpacityTuner`).
+
 ## Notes
 
 - A window running with higher privileges than the tuner cannot be changed. Run the app
@@ -99,8 +137,17 @@ src/WindowOpacityTuner/
   UI/HighlightForm.cs          the click-through picker outline
   UI/Controls/                 flat button, label, slider and card drawn for theme support
   app.ico                      window and exe icon
-assets/make_icon.py            regenerates app.ico (needs Pillow)
+assets/make_icon.py            regenerates app.ico and macos/AppIcon.icns (needs Pillow)
 install.sh, install.ps1        copy the exe somewhere Windows will let you pin it
+
+macos/
+  Sources/WindowOpacityTuner/
+    WindowOverlay.swift        screen capture behind one window, drawn over it
+    OpacityService.swift       owns the overlays and keeps them tracking
+    WindowPicker.swift         click-to-pick with the green outline
+    WindowList.swift           CGWindowList queries and coordinate conversion
+    MainView.swift, SettingsView.swift, Loc.swift, AppSettings.swift
+  build.sh                     builds and ad-hoc signs the .app
 ```
 
 ## License

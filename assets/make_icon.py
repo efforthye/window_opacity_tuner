@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Regenerates src/WindowOpacityTuner/app.ico.
+Regenerates src/WindowOpacityTuner/app.ico and macos/AppIcon.icns.
 
 Drawn rather than hand-authored so the icon can be tweaked in one place and the
 whole size ladder stays consistent. Run with Pillow installed:
@@ -13,7 +13,12 @@ from PIL import Image, ImageDraw
 
 CANVAS = 1024
 SIZES = [16, 20, 24, 32, 40, 48, 64, 128, 256]
-OUT = pathlib.Path(__file__).resolve().parent.parent / "src/WindowOpacityTuner/app.ico"
+ROOT = pathlib.Path(__file__).resolve().parent.parent
+OUT = ROOT / "src/WindowOpacityTuner/app.ico"
+OUT_ICNS = ROOT / "macos/AppIcon.icns"
+
+# macOS icons sit inside a margin on the 1024 grid rather than filling it.
+MAC_ART = 824
 
 SLATE_TOP = (76, 82, 92)
 SLATE_BOTTOM = (42, 46, 52)
@@ -75,6 +80,12 @@ def main():
     frames = [art.resize((s, s), Image.LANCZOS) for s in SIZES]
     frames[-1].save(OUT, format="ICO", sizes=[(s, s) for s in SIZES], append_images=frames[:-1])
     print(f"wrote {OUT} ({OUT.stat().st_size} bytes)")
+
+    mac = Image.new("RGBA", (CANVAS, CANVAS), (0, 0, 0, 0))
+    offset = (CANVAS - MAC_ART) // 2
+    mac.alpha_composite(art.resize((MAC_ART, MAC_ART), Image.LANCZOS), (offset, offset))
+    mac.save(OUT_ICNS, format="ICNS")
+    print(f"wrote {OUT_ICNS} ({OUT_ICNS.stat().st_size} bytes)")
 
 
 if __name__ == "__main__":
